@@ -2,21 +2,77 @@ from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+brightness = 100
+color_temp = 100
+
 app = FastAPI()
 
-class Item(BaseModel):
-    name: str
-    price: float
-    is_offer: Union[bool, None] = None
+# class Item(BaseModel):
+#     name: str
+#     price: float
+#     is_offer: Union[bool, None] = None
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+def clamp(value):
+    return max(0, min(100, value))
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+@app.post("/set_brightness")
+def set_brightness(data: int):
+    global brightness
+    brightness = clamp(data)
+    print(f"set_brightness: {brightness}")
 
-@app.put("/items/{item_id}")
-def update_item(item_id: int, item: Item):
-    return {"item_name": item.name, "item_id": item_id}
+    return brightness
+
+@app.post("/increase_brightness")
+def increase_brightness():
+    global brightness
+    brightness = clamp(brightness + 10)
+    print(f"increase_brightness: {brightness}")
+
+    return brightness
+
+@app.post("/decrease_brightness")
+def decrease_brightness():
+    global brightness
+    brightness = clamp(brightness - 10)
+    print(f"decrease_brightness: {brightness}")
+
+    return brightness
+
+@app.post("/set_color_temp")
+def set_color_temp(data: int):
+    global color_temp
+    color_temp = clamp(data)
+    print(f"set_color_temp: {color_temp}")
+
+    return color_temp
+
+@app.post("/increase_color_temp")
+def increase_color_temp():
+    global color_temp
+    color_temp = clamp(color_temp + 10)
+    print(f"increase_color_temp: {color_temp}")
+    
+    return color_temp
+
+@app.post("/decrease_color_temp")
+def decrease_color_temp():
+    global color_temp
+    color_temp = clamp(color_temp - 10)
+    print(f"decrease_color_temp: {color_temp}")
+    
+    return color_temp
+
+@app.get("/get_brightness")
+def get_brightness():
+    global brightness
+    print(f"get_brightness: {brightness}")
+
+    return brightness
+
+@app.get("/get_color_temp")
+def get_color_temp():
+    global color_temp
+    print(f"get_color_temp: {color_temp}")
+    
+    return color_temp
