@@ -1,6 +1,6 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from gpiozero import PWMLED
-# from gpiozero.pins.lgpio import LGPIOFactory
 from gpiozero.pins.lgpio import LGPIOFactory
 
 WARM_LED = 12
@@ -13,29 +13,22 @@ factory = None
 warm_led = None
 cool_led = None
 
-app = FastAPI()
-
-# class Item(BaseModel):
-#     name: str
-#     price: float
-#     is_offer: Union[bool, None] = None
-
-def clamp(value):
-    return max(0.0, min(1.0, value))
-
-@app.on_event("startup")
-def setup_gpio():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     print("GPIO Setup, running only once")
     global factory, warm_led, cool_led
     factory = LGPIOFactory()
     warm_led = PWMLED(WARM_LED, pin_factory=factory)
     cool_led = PWMLED(COOL_LED, pin_factory=factory)
-
-@app.on_event("shutdown")
-def cleanup_gpio():
+    yield
     print("GPIO cleanup, running only once on shutdown")
     warm_led.close()
     cool_led.close()
+
+app = FastAPI(lifespan=lifespan)
+
+def clamp(value):
+    return max(0.0, min(1.0, value))
 
 @app.post("/set_brightness")
 def set_brightness(data: int):
