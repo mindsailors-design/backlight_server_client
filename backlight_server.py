@@ -18,8 +18,10 @@ def clamp(value):
 
 def set_pwm():
     print("Setting PWM")
-    warm_led.value = brightness
-    cool_led.value = color_temp
+    warm_led.value = brightness * (1.0 - color_temp)
+    print("warm led: ", warm_led.value)
+    cool_led.value = brightness * color_temp
+    print("cool led: ", cool_led.value)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
