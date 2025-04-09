@@ -6,12 +6,20 @@ from gpiozero.pins.lgpio import LGPIOFactory
 WARM_LED = 12
 COOL_LED = 13
 
-brightness = 1
-color_temp = 1
+brightness = 0.1
+color_temp = 0.1
 
 factory = None
 warm_led = None
 cool_led = None
+
+def clamp(value):
+    return max(0.0, min(1.0, value))
+
+def set_pwm():
+    print("Setting PWM")
+    warm_led.value = brightness
+    cool_led.value = color_temp
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,6 +28,7 @@ async def lifespan(app: FastAPI):
     factory = LGPIOFactory()
     warm_led = PWMLED(WARM_LED, pin_factory=factory)
     cool_led = PWMLED(COOL_LED, pin_factory=factory)
+    set_pwm()
     yield
     print("GPIO cleanup, running only once on shutdown")
     warm_led.close()
@@ -27,14 +36,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-def clamp(value):
-    return max(0.0, min(1.0, value))
-
 @app.post("/set_brightness")
-def set_brightness(data: int):
+def set_brightness(data: float):
     global brightness
     brightness = clamp(data)
     print(f"set_brightness: {brightness}")
+    set_pwm()
 
     return brightness
 
@@ -43,6 +50,7 @@ def increase_brightness():
     global brightness
     brightness = clamp(brightness + 0.1)
     print(f"increase_brightness: {brightness}")
+    set_pwm()
 
     return brightness
 
@@ -51,14 +59,16 @@ def decrease_brightness():
     global brightness
     brightness = clamp(brightness - 0.1)
     print(f"decrease_brightness: {brightness}")
+    set_pwm()
 
     return brightness
 
 @app.post("/set_color_temp")
-def set_color_temp(data: int):
+def set_color_temp(data: float):
     global color_temp
     color_temp = clamp(data)
     print(f"set_color_temp: {color_temp}")
+    set_pwm()
 
     return color_temp
 
@@ -67,7 +77,8 @@ def increase_color_temp():
     global color_temp
     color_temp = clamp(color_temp + 0.1)
     print(f"increase_color_temp: {color_temp}")
-    
+    set_pwm()
+
     return color_temp
 
 @app.post("/decrease_color_temp")
@@ -75,7 +86,8 @@ def decrease_color_temp():
     global color_temp
     color_temp = clamp(color_temp - 0.1)
     print(f"decrease_color_temp: {color_temp}")
-    
+    set_pwm()
+
     return color_temp
 
 @app.get("/get_brightness")
