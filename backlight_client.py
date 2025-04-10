@@ -1,4 +1,7 @@
 import typer
+import requests
+
+MAIN_URL = "http://127.0.0.1:8000"
 
 app = typer.Typer()
 
@@ -12,6 +15,15 @@ def set_brightness(brightness: float):
     -d ''
     """
     print(command)
+
+    set_brightness_url = "/set_brightness"
+    url = MAIN_URL + set_brightness_url
+    params = {"data": brightness}
+    headers = {"accept": "application/json"}
+
+    response = requests.post(url, headers=headers, params=params, data="")
+    print(response.status_code)
+    print(response.text)
 
 @app.command()
 def set_color_temp(color_temp: float):
@@ -43,6 +55,21 @@ def decrease_color_temp():
 @app.command()
 def get_brightness():
     print("Getting brightness")
+
+    command = """curl -X 'GET' \
+    'http://127.0.0.1:8000/get_brightness' \
+    -H 'accept: application/json'"""
+    print(command)
+
+    get_brightness_url = "/get_brightness"
+    url = MAIN_URL + get_brightness_url
+
+    headers = {"accept": "application/json"}
+
+    response = requests.get(url, headers=headers)
+
+    print(response.status_code)
+    print(response.text)
 
 @app.command()
 def get_color_temp():
