@@ -1,0 +1,14 @@
+[Unit]
+Description=Backlight API (FastAPI app for PWM control)
+After=network.target
+
+[Service]
+User=admin
+WorkingDirectory=/home/admin/backlight_server_client
+ExecStart=/home/admin/backlight_server_client/env/bin/uvicorn backlight_server:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
